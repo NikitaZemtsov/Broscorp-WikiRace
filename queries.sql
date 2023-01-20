@@ -1,29 +1,15 @@
-
 - Топ 5 найпопулярніших статей (ті що мають найбільшу кількість посилань на себе)
-with first as(select l.id, l.title
-				from link as l
-				where l.title in (select p.title
-								  	from page as p))
-
-select s.counter as coun_of_links,
-       l.title
-	from
-	(select a.link as l_id,
-	        a.counter as counter
-		  	from
-	 			(
-	 			select count(ptl.link) as counter,
-	 			        ptl.link as link
+with first as (select count(ptl.link) as counter,
+	 			        ptl.link as p_l
 			  			from page_to_link as ptl
-						join first as f on f.id = ptl.link
 						group by ptl.link
-						order by counter DESC) as a
-						) as s
-join link as l
-    on l.id = s.l_id
-order by coun_of_links desc
-
-
+						)
+select f.counter, l.title
+from link as l
+JOIN first as f
+	on f.p_l = l.id
+order by counter DESC
+limit 5
 
 
 - Топ 5 статей з найбільшою кількістю посилань на інші статті
@@ -44,9 +30,9 @@ limit 5
 --1)для дружбы находим список уникальных дочерних ссылок и обзываем first
  with first as (select distinct(l.title) as title
 			      from page as p
-			      join page_to_link as ptl
+			      JOIN page_to_link as ptl
 			        on ptl.page = p.id
-				  join link as l
+				  JOIN link as l
 				    on l.id = ptl.link
 			      where p.title = 'Дружба')
 --3) считаем средние переходы
@@ -54,8 +40,8 @@ limit 5
  --2)для полученого списка дочерних ссылок считаем количество переходов
 ( select  count(ptl.link) as counter
  from page as p
- join page_to_link as ptl
+ JOIN page_to_link as ptl
     on ptl.page = p.id
- join first as f
+ JOIN first as f
     on f.title = p.title
  group by f.title) a

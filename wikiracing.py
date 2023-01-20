@@ -13,7 +13,7 @@ import warnings
 requests_per_minute = 100
 links_per_page = 200
 language = "uk"
-max_time_script_execution = 10
+max_time_script_execution = 100
 
 wait_time_between_requests = 6000 / requests_per_minute
 
@@ -117,3 +117,17 @@ class WikiRacer:
         except networkx.exception.NetworkXNoPath:
             return result
         return result
+
+
+def app():
+    """
+    Should to add data validation in the future with marshmallow.
+    """
+    start = input("Enter start title:")
+    finish = input("Enter finish title:")
+    race = WikiRacer()
+    print(f"Result: {race.find_path(start, finish)}")
+
+
+if __name__ == "__main__":
+    app()
