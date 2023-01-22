@@ -56,7 +56,5 @@ docker-compose.yaml для запуску постгрес (буде надан�
 
 queries.sql з вашими запитами
 
-Архів із файлами для початку роботи:
-https://drive.google.com/file/d/1MasdP4YFRVMzxOgw8SYUTPQjsFPq-16g
 
 
