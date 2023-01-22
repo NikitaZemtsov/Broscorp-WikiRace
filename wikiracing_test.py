@@ -6,8 +6,8 @@ from wikiracing import WikiRacer
 class WikiRacerTest(unittest.TestCase):
 
     """
-    The main problem with these tests they depend on an internet connection.
-    In order for the test to always pass, you need to mock wikipedia.page to return correct data always
+    The main problem that these tests depend on an internet connection.
+    In order for the test to always pass, you need to Mock wikipedia.page to return correct data always
     and make test DB
     """
 

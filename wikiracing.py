@@ -17,7 +17,8 @@ import warnings
 requests_per_minute = 100
 links_per_page = 200
 language = "uk"
-max_time_script_execution = 100
+
+max_time_script_execution = 200
 
 wait_time_between_requests = 6000 / requests_per_minute
 
@@ -25,6 +26,7 @@ wikipedia.set_lang(language)
 wikipedia.set_rate_limiting(rate_limit=True, min_wait=timedelta(milliseconds=wait_time_between_requests))
 warnings.catch_warnings()
 warnings.simplefilter("ignore")
+
 
 
 def get_page_titles_from_db(title):
@@ -103,25 +105,21 @@ class WikiRacer:
 
         while self.program_continue:
             for item in list(queue):
-                if not self.program_continue:
-                    break
                 titles = get_titles(item)
-                if finish in titles:
-                    graph.add_edge(item, finish)
-                    continue
                 for title in titles:
+                    if not self.program_continue:
+                        return result
                     queue.append(title)
                     graph.add_edge(item, title)
-                    if not self.program_continue:
-                        break
+                    try:
+                        result = list(networkx.shortest_path(graph, start, finish))
+                        return result
+                    except networkx.exception.NetworkXNoPath:
+                        continue
+                    except networkx.exception.NodeNotFound:
+                        continue
                 queue.popleft()
-
-        try:
-            result = list(networkx.dijkstra_path(graph, start, finish))
-        except networkx.exception.NetworkXNoPath:
-            return result
         return result
-
 
 def app():
     """
@@ -131,7 +129,5 @@ def app():
     finish = input("Enter finish title:")
     race = WikiRacer()
     print(f"Result: {race.find_path(start, finish)}")
-
-
 if __name__ == "__main__":
     app()

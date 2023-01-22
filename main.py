@@ -2,8 +2,6 @@ import sqlalchemy as db
 from sqlalchemy.orm import declarative_base, Session
 import logging
 
-
-
 # Databade creation
 engine = db.create_engine("postgresql+psycopg2://postgres:postgres@localhost/wiki")
 session = Session(engine)
