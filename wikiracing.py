@@ -9,15 +9,10 @@ from main import logger, session, engine
 from model import PageModel, LinkModel
 import warnings
 
-# The script is always executed for the set time "max_time_script_execution".
-# Even if we make two identical requests one by one.
-# It won't give you an answer right away.
-
 
 requests_per_minute = 100
 links_per_page = 200
 language = "uk"
-
 max_time_script_execution = 200
 
 wait_time_between_requests = 6000 / requests_per_minute
@@ -129,5 +124,7 @@ def app():
     finish = input("Enter finish title:")
     race = WikiRacer()
     print(f"Result: {race.find_path(start, finish)}")
+
+
 if __name__ == "__main__":
     app()
