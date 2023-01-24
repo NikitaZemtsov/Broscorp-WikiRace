@@ -3,17 +3,17 @@ from typing import List
 import wikipedia
 import networkx
 from collections import deque
-import time
 
-from main import logger, session, engine
-from model import PageModel, LinkModel
+
+from main import logger, session
+from model import PageModel
 import warnings
 
 
 requests_per_minute = 100
 links_per_page = 200
 language = "uk"
-max_time_script_execution = 200
+max_time_script_execution = 2000
 
 wait_time_between_requests = 6000 / requests_per_minute
 
@@ -25,7 +25,7 @@ warnings.simplefilter("ignore")
 
 
 def get_page_titles_from_db(title):
-    titles = None
+    titles = []
     page = None
     try:
         page = session.query(PageModel).filter(PageModel.title == title).first()
@@ -38,23 +38,25 @@ def get_page_titles_from_db(title):
 
 def get_page_titles_from_wiki(title):
     titles = []
+    main_page = None
     try:
         page = wikipedia.page(title=title)
         titles = page.links[0:200]
-    except wikipedia.exceptions.HTTPTimeoutError:
-        return
-    except wikipedia.exceptions.PageError:
-        return titles
-    except wikipedia.exceptions.DisambiguationError:
-        return titles
-    except Exception as err:
+    except (wikipedia.exceptions.PageError,
+            wikipedia.exceptions.DisambiguationError,
+            Exception) as err:
         logger.warning(f" Cannot get page`s titles: {title} from WIIKI. Action failed with error: {err}")
-        return
-    main_page = PageModel(title=title)
-    for page in titles:
-        new_page = session.query(LinkModel).where(LinkModel.title == page).first()
+        return titles
+    try:
+       main_page = session.query(PageModel).filter(PageModel.title == title).first()
+    except Exception as err:
+        logger.warning(f" Cannot create page with title: {title}. Action failed with error: {err}")
+    if main_page is None:
+        main_page = PageModel(title=title)
+    for title in titles:
+        new_page = session.query(PageModel).filter(PageModel.title == title).first()
         if new_page is None:
-            new_page = LinkModel(title=page)
+            new_page = PageModel(title=title)
         main_page.links_on_page.append(new_page)
     session.add(main_page)
     session.commit()
@@ -71,10 +73,8 @@ def get_titles(title):
          - Cache (don`t work now)
      """
     titles = get_page_titles_from_db(title)
-    if titles is None:
+    if not titles:
         titles = get_page_titles_from_wiki(title)
-    if titles is None:
-        raise Exception('Search resources: DB and Wiki. Not available!')
     return titles
 
 
